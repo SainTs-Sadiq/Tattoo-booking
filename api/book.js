@@ -47,15 +47,18 @@ export default async function handler(req, res) {
   const reference_links = clean(body.reference_links, 2000);
 
   if (!name || !email || !style || !service_type) return res.status(400).json({ error: 'Name, email, appointment location, and tattoo idea are required.' });
-  if (!['in-studio', 'home-service'].includes(service_type)) return res.status(400).json({ error: 'Please choose a valid appointment location.' });
+  if (!['studio', 'home_service'].includes(service_type)) return res.status(400).json({ error: 'Please choose a valid appointment location.' });
   if (!/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
 
   const { data, error } = await supabase.from('booking_requests').insert({
     name, email, phone, preferred_date: preferred_date || null, preferred_time, service_type, size, placement, style, reference_links
   }).select('id, created_at').single();
-  if (error) return res.status(500).json({ error: 'Could not save your booking request.' });
+  if (error) {
+    console.error('Supabase booking insert failed:', error);
+    return res.status(500).json({ error: 'Could not save your booking request.' });
+  }
 
-  const locationLabel = service_type === 'home-service' ? 'Home service' : 'Coming into the studio';
+  const locationLabel = service_type === 'home_service' ? 'Home service' : 'Coming into the studio';
   const summary = `\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nAppointment location: ${locationLabel}\nPreferred date: ${preferred_date || 'Flexible'}\nPreferred time: ${preferred_time || 'Flexible'}\nSize: ${size || 'Not specified'}\nPlacement: ${placement || 'Not specified'}\n\nTattoo idea / style:\n${style}\n\nReference links:\n${reference_links || 'None provided'}\n\nBooking ID: ${data.id}`;
 
   const results = await Promise.allSettled([
