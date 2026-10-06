@@ -13,7 +13,7 @@ const b=req.body||{};if(clean(b.website,100))return res.status(200).json({ok:tru
 const name=clean(b.name,120),email=clean(b.email,254).toLowerCase(),phone=clean(b.phone,60),age=clean(b.age,10),gender=clean(b.gender,60),first=clean(b.first,30);
 const location=clean(b.location,500),placement=clean(b.placement,160),refs=clean(b.refs,2000),pay=clean(b.pay,100),allergies=clean(b.allergies,500),notes=clean(b.notes,5000);
 const preferred_date=clean(b.preferred_date,20),preferred_time=clean(b.preferred_time,60),size=clean(b.size,100),style=clean(b.style,5000),service_type='home-service';
-if(!name||!email||!phone||!age||!first||!location||!placement||!notes||!b.ack)return res.status(400).json({error:'Please complete all required booking fields.'});
+if(!name||!email||!phone||!age||!first||!preferred_date||!preferred_time||!location||!placement||!notes||!b.ack)return res.status(400).json({error:'Please complete all required booking fields, including your preferred date and time.'});
 if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return res.status(400).json({error:'Please enter a valid email address.'});
 const combinedNotes=['Age: '+age,'Gender: '+(gender||'Not provided'),'First tattoo: '+first,'Payment method: '+(pay||'Not provided'),'Allergies: '+(allergies||'None provided'),'Deposit acknowledgment: yes','Additional notes: '+notes].join('\n');
 const result=await supabase.from('booking_requests').insert({name,email,phone,preferred_date:preferred_date||null,preferred_time:preferred_time||null,service_type,location,size:size||null,placement,style:style||notes,reference_links:refs||null,notes:combinedNotes,status:'pending'}).select('id,created_at').single();
