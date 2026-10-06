@@ -40,26 +40,24 @@ export default async function handler(req, res) {
   const phone = clean(body.phone, 60);
   const preferred_date = clean(body.preferred_date, 20);
   const preferred_time = clean(body.preferred_time, 60);
-  const service_type = clean(body.service_type, 40);
+  const location = clean(body.location, 500);
   const size = clean(body.size, 100);
   const placement = clean(body.placement, 160);
   const style = clean(body.style, 5000);
   const reference_links = clean(body.reference_links, 2000);
 
-  if (!name || !email || !style || !service_type) return res.status(400).json({ error: 'Name, email, appointment location, and tattoo idea are required.' });
-  if (!['studio', 'home_service'].includes(service_type)) return res.status(400).json({ error: 'Please choose a valid appointment location.' });
+  if (!name || !email || !style || !location) return res.status(400).json({ error: 'Name, email, service location, and tattoo idea are required.' });
   if (!/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
 
   const { data, error } = await supabase.from('booking_requests').insert({
-    name, email, phone, preferred_date: preferred_date || null, preferred_time, service_type, size, placement, style, reference_links
+    name, email, phone, preferred_date: preferred_date || null, preferred_time, location, size, placement, style, reference_links
   }).select('id, created_at').single();
   if (error) {
     console.error('Supabase booking insert failed:', error);
     return res.status(500).json({ error: 'Could not save your booking request.' });
   }
 
-  const locationLabel = service_type === 'home_service' ? 'Home service' : 'Coming into the studio';
-  const summary = `\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nAppointment location: ${locationLabel}\nPreferred date: ${preferred_date || 'Flexible'}\nPreferred time: ${preferred_time || 'Flexible'}\nSize: ${size || 'Not specified'}\nPlacement: ${placement || 'Not specified'}\n\nTattoo idea / style:\n${style}\n\nReference links:\n${reference_links || 'None provided'}\n\nBooking ID: ${data.id}`;
+  const summary = `\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nService location: ${location}\nPreferred date: ${preferred_date || 'Flexible'}\nPreferred time: ${preferred_time || 'Flexible'}\nSize: ${size || 'Not specified'}\nPlacement: ${placement || 'Not specified'}\n\nTattoo idea / style:\n${style}\n\nReference links:\n${reference_links || 'None provided'}\n\nBooking ID: ${data.id}`;
 
   const results = await Promise.allSettled([
     sendBrevoEmail({ to: STUDIO_EMAIL, replyTo: email, subject: `New tattoo booking request — ${name}`, text: `A new SadsSaint's booking request was submitted.${summary}` }),
