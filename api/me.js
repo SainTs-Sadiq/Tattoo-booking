@@ -1,0 +1,1 @@
+import {send,isAdmin} from '../lib/util.js';export default(req,res)=>isAdmin(req)?send(res,200,{ok:true}):send(res,401,{error:'Not signed in'});
