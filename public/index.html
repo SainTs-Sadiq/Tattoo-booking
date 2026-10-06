@@ -17,7 +17,7 @@
 <section class="hero"><div class="heroIn"><div class="eyebrow">Custom tattoos · Clean work · Real art</div><h1>SadsSaint's <em>Turning your ideas into ink.</em></h1><p>Submit your tattoo concept, placement and preferred timing. Your request is securely saved and emailed to the studio, and you'll receive a confirmation email.</p><div class="actions"><a class="btn primary" href="#book">Request a booking</a><a class="btn" href="mailto:sadsainttattoopalor@gmail.com">Email the studio</a></div></div></section>
 <section class="section" id="about"><div class="head"><div><div class="kicker">The studio</div><h2>Built around<br>the art.</h2></div><p>Every piece starts with an idea. Share the concept, reference, placement and vibe — the studio will shape the details with you.</p></div><div class="features"><article class="feature"><div class="num">01</div><h3>Custom Tattoos</h3><p>Original concepts tailored to your story, body placement and preferred style.</p></article><article class="feature"><div class="num">02</div><h3>Clean Work</h3><p>Thoughtful linework, composition and finish with a focus on a clean result.</p></article><article class="feature"><div class="num">03</div><h3>Real Art</h3><p>From bold statements to subtle pieces — your idea becomes something made to last.</p></article></div></section>
 <section class="section" id="artist"><div class="head"><div><div class="kicker">The artist</div><h2>Meet<br>the artist.</h2></div><p>Art first. Tattoo second. Every piece is built around your idea, your placement, and the feeling you want it to carry.</p></div><div class="features"><article class="feature"><div class="num">ARTIST</div><h3>Hello loves…</h3><p>Thank you for being here. I’m so excited to help you realize your next tattoo. I have been tattooing for 4 years and creating art my entire life.</p></article><article class="feature"><div class="num">BACKGROUND</div><h3>Studio Art</h3><p>I have a BFA in studio art from the University of Texas at Austin, working primarily in printmaking and painting, before moving from Austin to Brooklyn to further my tattooing career.</p></article><article class="feature"><div class="num">STYLE</div><h3>Dark Motifs</h3><p>My work invokes ethereal dreamscapes, gothic romanticism and distinctive dark motifs.</p></article></div><div class="pillars" style="margin-top:24px"><div><b>Dark &amp; Macabre</b> High contrast, gothic romance and vintage-inspired work.</div><div><b>Flora &amp; Fauna</b> Select animals, botanical elements and natural forms.</div><div><b>Distinctive Pieces</b> Random objects, frames and matching placements.</div></div></section>
-<section class="section" id="work"><div class="head"><div><div class="kicker">The work</div><h2>Explore<br>the ink.</h2></div><p>Portfolio images can be managed through the existing site storage without changing your booking system.</p></div><div class="gallery" id="gallery"><div class="tile"><div class="placeholder">Portfolio<br>Coming Soon</div></div><div class="tile"><div class="placeholder">Blackwork<br>&amp; Fine Line</div></div><div class="tile"><div class="placeholder">Custom<br>Pieces</div></div><div class="tile"><div class="placeholder">Dark<br>Art</div></div></div></section>
+<section class="section" id="work"><div class="head"><div><div class="kicker">The work</div><h2>Explore<br>the ink.</h2></div><p>Portfolio images can be managed through the existing site storage without changing your booking system.</p></div><div class="gallery" id="gallery"><div class="tile"><div class="placeholder">Loading<br>Portfolio…</div></div></div></section>
 <section class="section" id="reviews"><div class="head"><div><div class="kicker">Client words</div><h2>Reviews<br>from the chair.</h2></div><p>Real feedback matters. These are the review details supplied with the original site design.</p></div><div class="reviews-grid"><article class="copy"><div class="stars">★★★★★</div><p>“Best tattoo experience I’ve ever had. Listened carefully, made thoughtful suggestions, and the final result is perfect.”</p><strong>— Jordan T.</strong></article><article class="copy"><div class="stars">★★★★★</div><p>“The black and grey work is next level. Clean lines, beautiful contrast. Studio atmosphere is calm and professional.”</p><strong>— Alfred R.</strong></article><article class="copy"><div class="stars">★★★★★</div><p>“Matching pieces for me and my partner. Understood exactly what we wanted. Highly recommend.”</p><strong>— Matthew &amp; Rachel</strong></article></div></section>
 <section class="section" id="faq"><div class="head"><div><div class="kicker">Before you book</div><h2>Questions<br>answered.</h2></div></div><div class="faq"><details><summary>How to book</summary><p>Fill out the booking form or DM @sadsaints.tats.pa on TikTok. Send your idea, placement, size, and reference images. We reply with availability and the deposit link.</p></details><details><summary>Pricing</summary><p>Pricing depends on size, detail, and placement. Send your idea through the form and you will get a quote before you pay anything.</p></details><details><summary>Deposit &amp; rescheduling</summary><p>A $100 non-refundable deposit is taken to hold your date. Reschedule at least 1 week before your appointment, and your deposit is honored for 4 months from the day you pay it.</p></details></div></section>
 <section class="section" id="book"><div class="head"><div><div class="kicker">Booking request</div><h2>Let's make<br>your piece.</h2></div><p>Your request is saved as pending and emailed to the studio. The final appointment is confirmed directly with you.</p></div>
@@ -45,6 +45,38 @@
 <div class="copyright">© <span id="year"></span> SadsSaint's TATS PALOR. All rights reserved.</div>
 <script>
 document.getElementById('year').textContent=new Date().getFullYear();
+async function loadPublicPortfolio(){
+  const gallery=document.getElementById('gallery');
+  try{
+    const r=await fetch('/api/portfolio',{cache:'no-store'});
+    if(!r.ok) throw new Error('Portfolio request failed');
+    const items=await r.json();
+    gallery.innerHTML='';
+    if(!Array.isArray(items)||!items.length){
+      gallery.innerHTML='<div class="tile"><div class="placeholder">Portfolio<br>Coming Soon</div></div><div class="tile"><div class="placeholder">Blackwork<br>&amp; Fine Line</div></div><div class="tile"><div class="placeholder">Custom<br>Pieces</div></div><div class="tile"><div class="placeholder">Dark<br>Art</div></div>';
+      return;
+    }
+    items.forEach(item=>{
+      const tile=document.createElement('div');
+      tile.className='tile';
+      const img=document.createElement('img');
+      img.src=item.url;
+      img.alt=item.caption||'Tattoo portfolio piece';
+      img.loading='lazy';
+      tile.appendChild(img);
+      if(item.caption){
+        const label=document.createElement('span');
+        label.textContent=item.caption;
+        tile.appendChild(label);
+      }
+      gallery.appendChild(tile);
+    });
+  }catch(err){
+    gallery.innerHTML='<div class="tile"><div class="placeholder">Portfolio<br>Unavailable</div></div>';
+    console.error(err);
+  }
+}
+loadPublicPortfolio();
 const f=document.getElementById('form'),status=document.getElementById('status');
 f.onsubmit=async e=>{e.preventDefault();const b=f.querySelector('button');b.disabled=true;status.className='status show';status.textContent='Sending your booking request…';try{const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(f)))});const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out.error||'Something went wrong.');status.textContent='Booking request received'+(out.bookingId?' — reference '+out.bookingId:'')+'. Check your email for confirmation; the studio will reply once your request is reviewed.';f.reset()}catch(err){status.textContent=err.message+' Please try again or email sadsainttattoopalor@gmail.com.'}finally{b.disabled=false}};
 </script></body></html>
