@@ -37,3 +37,7 @@ create index if not exists booking_requests_status_idx on public.booking_request
 create index if not exists booking_requests_service_type_idx on public.booking_requests(service_type);
 
 alter table public.booking_requests enable row level security;
+
+
+-- Home-service location for new bookings
+alter table public.booking_requests add column if not exists location text;
