@@ -24,7 +24,7 @@ export default async function handler(req,res){
   if(clean(body.website,100)) return res.status(200).json({ok:true});
   const name=clean(body.name,120), email=clean(body.email,254).toLowerCase(), phone=clean(body.phone,60);
   const age=clean(body.age,10), gender=clean(body.gender,60), first=clean(body.first,30);
-  const service_type=body.service_type==='home-service'?'home-service':'in-studio';
+  const service_type='home-service';
   const location=clean(body.location,500), placement=clean(body.placement,160);
   const preferred_date=clean(body.preferred_date,20), preferred_time=clean(body.preferred_time,60);
   const size=clean(body.size,100), style=clean(body.style,5000), refs=clean(body.refs,2000);
