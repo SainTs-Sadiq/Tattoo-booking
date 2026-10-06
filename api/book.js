@@ -30,18 +30,18 @@ export default async function handler(req,res){
   const size=clean(body.size,100), style=clean(body.style,5000), refs=clean(body.refs,2000);
   const pay=clean(body.pay,100), allergies=clean(body.allergies,500), notes=clean(body.notes,5000);
   if(!name||!email||!placement||!notes) return res.status(400).json({error:'Name, email, placement, and tattoo idea are required.'});
-  if(!/^([^\\s@]+)@([^\\s@]+)\\.([^\\s@]+)$/.test(email)) return res.status(400).json({error:'Please enter a valid email address.'});
+  if(!/^([^\s@]+)@([^\s@]+)\.([^\s@]+)$/.test(email)) return res.status(400).json({error:'Please enter a valid email address.'});
   if(service_type==='home-service'&&!location) return res.status(400).json({error:'Please provide the home service location.'});
-  const combinedNotes=[`Age: ${age||'Not provided'}`,`Gender: ${gender||'Not provided'}`,`First tattoo: ${first||'Not provided'}`,`Payment method: ${pay||'Not provided'}`,`Allergies: ${allergies||'None provided'}`,`Additional notes: ${notes}`].join('\\n');
+  const combinedNotes=[`Age: ${age||'Not provided'}`,`Gender: ${gender||'Not provided'}`,`First tattoo: ${first||'Not provided'}`,`Payment method: ${pay||'Not provided'}`,`Allergies: ${allergies||'None provided'}`,`Additional notes: ${notes}`].join('\n');
   const {data,error}=await supabase.from('booking_requests').insert({
     name,email,phone,preferred_date:preferred_date||null,preferred_time,service_type,location,size,placement,
     style:style||notes,reference_links:refs,notes:combinedNotes
   }).select('id,created_at').single();
   if(error){console.error('Supabase booking insert failed:',error);return res.status(500).json({error:'Could not save your booking request.'});}
-  const summary=`\\nName: ${name}\\nEmail: ${email}\\nPhone: ${phone||'Not provided'}\\nAppointment: ${service_type==='home-service'?'Home service':'Come to studio'}\\nLocation: ${location||'Studio'}\\nPreferred date: ${preferred_date||'Flexible'}\\nPreferred time: ${preferred_time||'Flexible'}\\nPlacement: ${placement}\\nReference links: ${refs||'None provided'}\\n\\nTattoo idea / notes:\\n${notes}\\n\\nBooking ID: ${data.id}`;
+  const summary=`\nName: ${name}\nEmail: ${email}\nPhone: ${phone||'Not provided'}\nAppointment: ${service_type==='home-service'?'Home service':'Come to studio'}\nLocation: ${location||'Studio'}\nPreferred date: ${preferred_date||'Flexible'}\nPreferred time: ${preferred_time||'Flexible'}\nPlacement: ${placement}\nReference links: ${refs||'None provided'}\n\nTattoo idea / notes:\\n${notes}\n\nBooking ID: ${data.id}`;
   const results=await Promise.allSettled([
     sendBrevoEmail({to:STUDIO_EMAIL,replyTo:email,subject:`New tattoo booking request — ${name}`,text:`A new SadsSaint's booking request was submitted.${summary}`}),
-    sendBrevoEmail({to:email,subject:`Booking request received — SadsSaint's TATS PALOR`,text:`Hi ${name},\\n\\nThanks for reaching out to SadsSaint's TATS PALOR. Your booking request has been received and is pending confirmation.\\n${summary}\\n\\nThe studio will reply once your request is reviewed.\\n\\n— SadsSaint's TATS PALOR`})
+    sendBrevoEmail({to:email,subject:`Booking request received — SadsSaint's TATS PALOR`,text:`Hi ${name},\n\nThanks for reaching out to SadsSaint's TATS PALOR. Your booking request has been received and is pending confirmation.\n${summary}\n\nThe studio will reply once your request is reviewed.\n\n— SadsSaint's TATS PALOR`})
   ]);
   if(results.some(r=>r.status==='rejected')) console.error('One or more booking emails failed',results);
   return res.status(201).json({ok:true,bookingId:data.id,emailSent:!results.some(r=>r.status==='rejected')});
