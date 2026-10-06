@@ -1,0 +1,1 @@
+import {send} from '../lib/util.js';export default(req,res)=>send(res,200,{ok:true},{'Set-Cookie':'ss_admin=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0'});
